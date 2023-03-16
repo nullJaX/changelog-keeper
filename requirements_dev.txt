@@ -1,0 +1,7 @@
+black
+build
+pytest
+pytest-cov
+pytest-mock
+ruff
+snakeviz
