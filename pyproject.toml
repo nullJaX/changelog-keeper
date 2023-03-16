@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "changelog-keeper"
+dynamic = ["version"]
+description = "Command line utility for keeping your changelog tidy"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Jacek Lewański"},
+]
+keywords = [
+  "changelog",
+  "changelog-generator",
+  "changelog-formatter",
+  "changelog-parser",
+  "keep-a-changelog",
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Documentation",
+  "Topic :: Software Development :: Version Control",
+  "Topic :: Text Processing",
+  "Topic :: Text Processing :: Markup :: Markdown",
+  "Topic :: Utilities",
+  "Typing :: Typed"
+]
+
+[project.urls]
+Homepage = "https://github.com/nullJaX/changelog-keeper"
+Repository = "https://github.com/nullJaX/changelog-keeper.git"
+
+[project.scripts]
+clkpr = "changelog_keeper.app:main_cli"
+
+[tool.setuptools]
+packages = ["changelog_keeper"]
+
+[tool.setuptools.dynamic]
+version = {attr = "changelog_keeper.VERSION"}
+
+[tool.ruff]
+select = ["E", "F", "B"]
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = "--cov=changelog_keeper --cov-report term-missing:skip-covered --cov-fail-under=88"
