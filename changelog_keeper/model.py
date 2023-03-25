@@ -1,3 +1,6 @@
+"""
+Changelog Keeper Model - stores all model classes used in the entire application.
+"""
 from collections import deque
 from datetime import datetime
 from dataclasses import dataclass
@@ -14,6 +17,11 @@ UNRELEASED_VERSION_NAME = "Unreleased"
 
 
 def missing_enum(cls, value, func):
+    """
+    Helper function for resolving missing item for enums.
+    Applies an arbitrary function and checks whether a changed value is a member of an
+    enum.
+    """
     value = func(value)
     for member in cls:
         if member.value == value:
@@ -22,7 +30,7 @@ def missing_enum(cls, value, func):
 
 
 class ModelError(BaseException):
-    pass
+    """This exception is raised when the model constraints have been violated."""
 
 
 #######################################################################################
@@ -31,6 +39,8 @@ class ModelError(BaseException):
 
 
 class ChangeType(Enum):
+    """All change types that are valid for an entry in the changelog"""
+
     ADDED = "Added"
     CHANGED = "Changed"
     DEPRECATED = "Deprecated"
@@ -44,12 +54,24 @@ class ChangeType(Enum):
 
 
 class VersionPhase(IntEnum):
+    """
+    Indicates the phase of the version. Allowed transitions:
+    UNRELEASED ---> RELEASED
+    RELEASED   ---> YANKED
+    """
+
     UNRELEASED = 0
     RELEASED = 1
     YANKED = 2
 
 
 class VersionState:
+    # pylint: disable=missing-function-docstring
+    """
+    State of a version. The object of this class handles and validates all operations
+    that can be performed on a version instance.
+    """
+
     _name: str
 
     @property
@@ -98,7 +120,7 @@ class VersionState:
             and (
                 (self.release_date.date() if self.release_date else None)
                 == (__o.release_date.date() if __o.release_date else None)
-            )
+            )  # Only consider the date part when comparing
         )
 
     def _release(self, version: str, ref_name: Optional[str]):
@@ -121,6 +143,8 @@ class VersionState:
 
 
 class Version:
+    # pylint: disable=protected-access,missing-function-docstring
+    """Changelog version representation"""
     _state: VersionState
 
     @property
@@ -186,6 +210,8 @@ class Version:
 
 
 class Changelog:
+    # pylint: disable=protected-access,missing-function-docstring
+    """Changelog representation"""
     header: List[str]
 
     _versions: Deque[Version]
@@ -284,6 +310,8 @@ class Changelog:
 
 
 class Operation(Enum):
+    """Allowed operations that can be executed against a changelog."""
+
     CREATE = "create"
     ADD = "add"
     CHECK = "check"
@@ -297,6 +325,11 @@ class Operation(Enum):
 
 @dataclass
 class Config:
+    """
+    Stores all arguments (passed from CLI) needed to perform any action on the
+    changelog.
+    """
+
     operation: Operation
 
     # add

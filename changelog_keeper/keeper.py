@@ -1,3 +1,6 @@
+"""
+Keeper Service Layer - This file stores main logic implementation.
+"""
 from typing import Tuple
 from changelog_keeper.model import (
     Changelog,
@@ -10,16 +13,36 @@ from changelog_keeper.parser import ChangelogParser, ENDLINE_CHAR
 
 
 class ChangelogKeeperError(BaseException):
-    pass
+    """
+    An exception indicating that the changelog content is logically invalid (ie. no
+    unreleased version, multiple unreleased versions, unreleased version not being the
+    first entry, etc.)
+    """
 
 
 class ChangelogKeeper:
+    # pylint: disable=too-few-public-methods
+    """
+    Main service class, stores default header and executes all valid operations based
+    on the value passed in the Config object.
+    """
+
     DEFAULT_HEADER: Tuple[str, ...] = ["# Changelog", ""]
 
     def __init__(self, config: Config):
         self.config = config
 
     def run(self):
+        """
+        Executes the operation provided in the config.
+        1a. If the operation is CREATE:
+            - generates a new changelog object
+        1b. Otherwise:
+            - loads a file provided in the Config object
+            - if the operation is not CHECK, performs a check
+            - performs operation specified in the Config object
+        2. Always overwrites the file with new content.
+        """
         if self.config.operation == Operation.CREATE:
             changelog: Changelog = self._create()
         else:
