@@ -1,6 +1,9 @@
+"""
+Changelog Keeper CLI - converts CLI arguments into Config object.
+"""
 from argparse import ArgumentParser
 from pathlib import Path
-from sys import exit
+from sys import exit  # pylint: disable=redefined-builtin
 from typing import List
 from changelog_keeper.model import ChangeType, DEFAULT_CHANGELOG_PATH, Config, Operation
 
@@ -37,13 +40,13 @@ FILE_ARGUMENT = (
 
 
 def _cli_create(subparsers):
-    HELP = "Generates new CHANGELOG file"
-    return subparsers.add_parser("create", help=HELP, description=HELP)
+    help_msg = "Generates new CHANGELOG file"
+    return subparsers.add_parser("create", help=help_msg, description=help_msg)
 
 
 def _cli_add(subparsers):
-    HELP = "Adds new entry to CHANGELOG file"
-    add = subparsers.add_parser("add", help=HELP, description=HELP)
+    help_msg = "Adds new entry to CHANGELOG file"
+    add = subparsers.add_parser("add", help=help_msg, description=help_msg)
     add.add_argument(
         "change_type",
         action="store",
@@ -66,21 +69,21 @@ def _cli_add(subparsers):
 
 
 def _cli_check(subparsers):
-    HELP = "Validates CHANGELOG file"
-    return subparsers.add_parser("check", help=HELP, description=HELP)
+    help_msg = "Validates CHANGELOG file"
+    return subparsers.add_parser("check", help=help_msg, description=help_msg)
 
 
 def _cli_release(subparsers):
-    HELP = "Releases a version within CHANGELOG file"
-    VERSION_KWARGS = {
+    help_msg = "Releases a version within CHANGELOG file"
+    version_kwargs = {
         "help": (
             "version name to be released. This value must not be present in the "
             "changelog versions."
         )
     }
-    VERSION_KWARGS.update(VERSION_ARGUMENT[1])
-    release = subparsers.add_parser("release", help=HELP, description=HELP)
-    release.add_argument(*VERSION_ARGUMENT[0], **VERSION_KWARGS)
+    version_kwargs.update(VERSION_ARGUMENT[1])
+    release = subparsers.add_parser("release", help=help_msg, description=help_msg)
+    release.add_argument(*VERSION_ARGUMENT[0], **version_kwargs)
     release.add_argument(
         "-r",
         "--ref",
@@ -98,16 +101,16 @@ def _cli_release(subparsers):
 
 
 def _cli_yank(subparsers):
-    HELP = "Yanks already released version within CHANGELOG file"
-    VERSION_KWARGS = {
+    help_msg = "Yanks already released version within CHANGELOG file"
+    version_kwargs = {
         "help": (
             "version name to be yanked. This value has to exist in the changelog "
             "versions."
         )
     }
-    VERSION_KWARGS.update(VERSION_ARGUMENT[1])
-    yank = subparsers.add_parser("yank", help=HELP, description=HELP)
-    yank.add_argument(*VERSION_ARGUMENT[0], **VERSION_KWARGS)
+    version_kwargs.update(VERSION_ARGUMENT[1])
+    yank = subparsers.add_parser("yank", help=help_msg, description=help_msg)
+    yank.add_argument(*VERSION_ARGUMENT[0], **version_kwargs)
     return yank
 
 
@@ -117,6 +120,9 @@ def _cli_yank(subparsers):
 
 
 def cli(arguments: List[str]) -> Config:
+    """
+    Converts CLI arguments into Config object.
+    """
     sub_cmds = (_cli_create, _cli_add, _cli_check, _cli_release, _cli_yank)
     parser = ArgumentParser(ENTRYPOINT_COMMAND, description=DESCRIPTION, add_help=True)
     parser.add_argument(*FILE_ARGUMENT[0], **FILE_ARGUMENT[1])

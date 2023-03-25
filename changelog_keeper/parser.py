@@ -1,6 +1,10 @@
+"""
+Changelog Parser - This file stores whole definition on how the file should be
+structured and encoded/decoded.
+"""
 from datetime import datetime
 from pathlib import Path
-from re import compile, Match
+from re import compile, Match  # pylint: disable=redefined-builtin
 from typing import List, Optional, Set, Tuple
 from changelog_keeper.model import Changelog, ChangeType, ModelError, Version
 
@@ -34,18 +38,36 @@ UNRELEASED_ENTRY_PREFIX_REGEX = compile(
 
 
 class ParserException(BaseException):
-    pass
+    """
+    This exception indicates that the issue has been encountered during loading or
+    saving a file.
+    """
 
 
 class ChangelogParser:
-    #######################################################################################
+    """
+    Parser class - All file encoding/decoding methods are stored in this class. It is
+    not meant to be instantiated (though it can be).
+    """
+
+    ###################################################################################
     ### Main (public) functions
-    #######################################################################################
+    ###################################################################################
 
     @classmethod
     def load(cls, path: Path) -> Changelog:
-        with open(path, OPEN_FILE_MODES[0], encoding=FILE_ENCODING) as fd:
-            lines = [line.replace(ENDLINE_CHAR, "") for line in fd]
+        """
+        Loads a file specified by the path and returns a changelog instance.
+        Loading is done in two phases:
+        1. Parse the contents into objects
+        2. Iterate through ALL entries, sort them in case some entries were
+           misplaced (ie. by VCS during a merge or rebase) and remove prefixes for all
+           items.
+        If there are any invalid entries and cannot be sorted automatically,
+        raises ParserException with a list of invalid lines to fix manually.
+        """
+        with open(path, OPEN_FILE_MODES[0], encoding=FILE_ENCODING) as file:
+            lines = [line.replace(ENDLINE_CHAR, "") for line in file]
 
         changelog = Changelog()
         lines = cls._load_header(lines, changelog)
@@ -68,18 +90,26 @@ class ChangelogParser:
 
     @classmethod
     def save(cls, changelog: Changelog, path: Path):
+        """
+        Saves Changelog object into a file specified by a path.
+        Saving is done in two phases:
+        1. For all unreleased versions' entries prefixes are added
+        2. The contents are written into the file
+        Prefixes are meant to solve the issue of entries being misplaced during casual
+        repository operations.
+        """
         for version in changelog:
             cls._prepare_entries(version)
 
         content = [cls._save_header(changelog)]
         content.extend(cls._save_versions(changelog))
-        with open(path, OPEN_FILE_MODES[1], encoding=FILE_ENCODING) as fd:
-            fd.write(ENDLINE_CHAR.join(content))
-            fd.write(ENDLINE_CHAR.join(changelog.rest))
+        with open(path, OPEN_FILE_MODES[1], encoding=FILE_ENCODING) as file:
+            file.write(ENDLINE_CHAR.join(content))
+            file.write(ENDLINE_CHAR.join(changelog.rest))
 
-    #######################################################################################
+    ###################################################################################
     ### Header
-    #######################################################################################
+    ###################################################################################
 
     @classmethod
     def _load_header(cls, lines: List[str], changelog: Changelog) -> List[str]:
@@ -93,9 +123,9 @@ class ChangelogParser:
     def _save_header(cls, changelog: Changelog) -> str:
         return ENDLINE_CHAR.join(changelog.header)
 
-    #######################################################################################
+    ###################################################################################
     ### Version
-    #######################################################################################
+    ###################################################################################
 
     @classmethod
     def _load_versions(cls, lines: List[str], changelog: Changelog) -> List[str]:
@@ -133,9 +163,9 @@ class ChangelogParser:
             sections.extend(cls._save_version_changes(version))
         return sections
 
-    #######################################################################################
+    ###################################################################################
     ### Version Heading
-    #######################################################################################
+    ###################################################################################
 
     @classmethod
     def _load_version_heading(cls, line: str) -> Version:
@@ -166,9 +196,9 @@ class ChangelogParser:
                 heading += f" {YANKED_SUFFIX}"
         return heading + ENDLINE_CHAR
 
-    #######################################################################################
+    ###################################################################################
     ### Version Changes
-    #######################################################################################
+    ###################################################################################
 
     @classmethod
     def _load_change_type(cls, line: str) -> ChangeType:
@@ -200,9 +230,9 @@ class ChangelogParser:
                     changes_list[-1] += f"{prefix}{change_line}{ENDLINE_CHAR}"
         return changes_list
 
-    #######################################################################################
+    ###################################################################################
     ### Organizing entries
-    #######################################################################################
+    ###################################################################################
 
     @classmethod
     def _prepare_entries(cls, version: Version):
