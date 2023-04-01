@@ -1,0 +1,24 @@
+name: Pull Request Check
+run-name: "PR(${{ github.actor }}): ${{ github.head_ref }} -> ${{ github.base_ref }}"
+on:
+  pull_request:
+    types: [opened, edited]
+    branches: ["master"]
+jobs:
+  test-37:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/workflows/python-test.yml
+        with:
+          python_version: "3.7"
+
+  test-other-python-versions:
+    needs: test-37
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.8", "3.9", "3.10"]
+    steps:
+      - uses: ./.github/workflows/python-test.yml
+        with:
+          python_version: ${{ python_version }}
