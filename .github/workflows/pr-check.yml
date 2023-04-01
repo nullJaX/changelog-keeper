@@ -2,16 +2,19 @@ name: Pull Request Check
 run-name: "PR(${{ github.actor }}): ${{ github.head_ref }} -> ${{ github.base_ref }}"
 on:
   pull_request:
-    types: [opened, edited]
     branches: ["master"]
 jobs:
   test-37:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/python-test.yml
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python_version: "3.7"
-
+          python-version: "3.7"
+      - run: pip install -r requirements_dev.txt
+      - run: python setup.py develop
+      - run: ruff .
+      - run: pytest
   test-other-python-versions:
     needs: test-37
     runs-on: ubuntu-latest
@@ -19,6 +22,11 @@ jobs:
       matrix:
         python_version: ["3.8", "3.9", "3.10"]
     steps:
-      - uses: ./.github/workflows/python-test.yml
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python_version: ${{ python_version }}
+          python-version: ${{ matrix.python_version }}
+      - run: pip install -r requirements_dev.txt
+      - run: python setup.py develop
+      - run: ruff .
+      - run: pytest
